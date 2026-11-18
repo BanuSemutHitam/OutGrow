@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OUTGROW — Outgrow Your Past.</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+  <!-- Chart.js for Progress Graphs -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="dark-theme">
+  <!-- Notification Toast Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- AUTH WRAPPER (Shown when logged out) -->
+  <div id="auth-screen" class="auth-wrapper">
+    <div class="auth-card">
+      <div class="brand-header">
+        <div class="brand-icon"><span class="material-symbols-outlined">monitoring</span></div>
+        <h1>OUTGROW</h1>
+        <p class="brand-subtitle">Outgrow Your Past.</p>
+      </div>
+
+      <!-- Login Form -->
+      <div id="login-box" class="auth-form-box">
+        <h2>Masuk</h2>
+        <form id="login-form">
+          <div class="form-group">
+            <label for="login-email">Alamat Email</label>
+            <input type="email" id="login-email" required placeholder="nama@email.com">
+          </div>
+          <div class="form-group">
+            <label for="login-password">Kata Sandi</label>
+            <input type="password" id="login-password" required placeholder="••••••••">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Masuk</button>
+        </form>
+        <div class="auth-switch">
+          <span>Belum punya akun? <a href="#" id="to-register-btn">Daftar sekarang</a></span>
+          <br>
+          <a href="#" id="to-forgot-btn" class="subtle-link">Lupa kata sandi?</a>
+        </div>
+      </div>
+
+      <!-- Register Form -->
+      <div id="register-box" class="auth-form-box" style="display: none;">
+        <h2>Buat Akun</h2>
+        <form id="register-form">
+          <div class="form-group">
+            <label for="reg-name">Nama Lengkap</label>
+            <input type="text" id="reg-name" required placeholder="Nama lengkap">
+          </div>
+          <div class="form-group">
+            <label for="reg-email">Alamat Email</label>
+            <input type="email" id="reg-email" required placeholder="nama@email.com">
+          </div>
+          <div class="form-group">
+            <label for="reg-password">Kata Sandi</label>
+            <input type="password" id="reg-password" required placeholder="•••••••• (Min. 6 karakter)">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Daftar</button>
+        </form>
+        <div class="auth-switch">
+          <span>Sudah punya akun? <a href="#" id="to-login-btn">Masuk</a></span>
+        </div>
+      </div>
+
+      <!-- Forgot Password Info -->
+      <div id="forgot-box" class="auth-form-box" style="display: none;">
+        <h2>Pemulihan Kata Sandi</h2>
+        <p class="helper-text">Masukkan email yang terdaftar untuk mengatur ulang kata sandi Anda.</p>
+        <form id="forgot-form">
+          <div class="form-group">
+            <label for="forgot-email">Alamat Email</label>
+            <input type="email" id="forgot-email" required placeholder="nama@email.com">
+          </div>
+          <div class="form-group">
+            <label for="forgot-new-pass">Kata Sandi Baru</label>
+            <input type="password" id="forgot-new-pass" required placeholder="Kata sandi baru">
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">Simpan Kata Sandi Baru</button>
+        </form>
+        <div class="auth-switch">
+          <a href="#" id="back-to-login-btn">Kembali ke Halaman Masuk</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APP WRAPPER (Shown when logged in) -->
+  <div id="app-screen" class="app-layout" style="display: none;">
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="brand-mark"><span class="material-symbols-outlined">monitoring</span></div>
+        <div class="brand-text">
+          <h2>OUTGROW</h2>
+          <span>OUTGROW<br>YOUR PAST.</span>
+        </div>
+      </div>
+      <button class="side-log-button" id="side-log-btn"><span class="material-symbols-outlined">add_box</span> Catat Latihan</button>
+
+      <nav class="sidebar-nav">
+        <a href="#dashboard" class="nav-link active" data-view="dashboard">
+          <span class="material-symbols-outlined">dashboard</span> Dasbor
+        </a>
+        <a href="#log-workout" class="nav-link" data-view="log-workout">
+          <span class="material-symbols-outlined">edit_square</span> Catat Latihan
+        </a>
+        <a href="#splits" class="nav-link" data-view="splits">
+          <span class="material-symbols-outlined">splitscreen</span> Program Latihan
+        </a>
+        <a href="#exercises" class="nav-link" data-view="exercises">
+          <span class="material-symbols-outlined">fitness_center</span> Daftar Latihan
+        </a>
+        <a href="#history" class="nav-link" data-view="history">
+          <span class="material-symbols-outlined">history</span> Riwayat Latihan
+        </a>
+        <a href="#progress" class="nav-link" data-view="progress">
+          <span class="material-symbols-outlined">trending_up</span> Perkembangan & PR
+        </a>
+        <a href="#settings" class="nav-link" data-view="settings">
+          <span class="material-symbols-outlined">settings</span> Pengaturan
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-chip">
+          <div class="user-avatar" id="nav-avatar">U</div>
+          <div class="user-info">
+            <strong id="nav-username">User</strong>
+            <span id="nav-useremail">email@test.com</span>
+          </div>
+        </div>
+        <button id="logout-btn" class="btn-logout" title="Keluar"><span class="material-symbols-outlined">logout</span></button>
+      </div>
+    </aside>
+
+    <!-- MAIN VIEW CONTAINER -->
+    <main class="main-content">
+      <!-- Top Bar -->
+      <header class="topbar">
+        <h1 id="page-title">Dasbor</h1>
+        <div class="topbar-actions">
+          <button class="btn btn-primary btn-sm" id="quick-log-btn">+ Catat Latihan</button>
+        </div>
+      </header>
+
+      <div class="content-body">
+        <!-- VIEW: DASHBOARD -->
+        <section id="view-dashboard" class="view-section active">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-label">Total Sesi Latihan</div>
+              <div class="stat-value" id="dash-total-workouts">0</div>
+              <div class="stat-sub">Sesi tercatat</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Program Latihan</div>
+              <div class="stat-value" id="dash-total-splits">0</div>
+              <div class="stat-sub">Program aktif</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-label">Daftar Latihan</div>
+              <div class="stat-value" id="dash-total-exercises">0</div>
+              <div class="stat-sub">Gerakan tersimpan</div>
+            </div>
+            <div class="stat-card stat-accent">
+              <div class="stat-label">Personal Record (PR)</div>
+              <div class="stat-value" id="dash-total-prs">0</div>
+              <div class="stat-sub">Rekor terbaik</div>
+            </div>
+          </div>
+
+          <div class="grid-2col">
+            <!-- Recent Workouts -->
+            <div class="card">
+              <div class="card-header">
+                <h3>Sesi Latihan Terakhir</h3>
+                <a href="#history" class="card-action">Lihat semua</a>
+              </div>
+              <div class="card-body">
+                <div id="dash-recent-list" class="item-list"></div>
+              </div>
+            </div>
+
+            <!-- Top Personal Records -->
+            <div class="card">
+              <div class="card-header">
+                <h3>Personal Record (PR)</h3>
+                <a href="#progress" class="card-action">Lihat detail</a>
+              </div>
+              <div class="card-body">
+                <div id="dash-prs-list" class="item-list"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW: LOG WORKOUT -->
+        <section id="view-log-workout" class="view-section">
+          <div class="card">
+            <div class="card-header">
+              <h3>Catat Sesi Latihan Baru</h3>
+            </div>
+            <div class="card-body">
+              <form id="workout-log-form">
+                <div class="form-row">
+                  <div class="form-group flex-1">
+                    <label for="log-date">Tanggal Latihan</label>
+                    <input type="date" id="log-date" required>
+                  </div>
+                  <div class="form-group flex-1">
+                    <label for="log-session-select">Sesi Latihan</label>
+                    <select id="log-session-select" required>
+                      <option value="">-- Pilih Sesi Latihan --</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="workout-exercises-section">
+                  <div class="section-title-bar">
+                    <h4>Daftar Gerakan Dilakukan</h4>
+                    <button type="button" class="btn btn-secondary btn-sm" id="add-exercise-to-log-btn">+ Tambah Gerakan</button>
+                  </div>
+
+                  <div id="logged-exercises-container" class="logged-exercises-list">
+                    <!-- Dynamic exercises and sets inserted here -->
+                  </div>
+                </div>
+
+                <div class="form-actions">
+                  <button type="submit" class="btn btn-primary btn-lg">Simpan Latihan</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW: HISTORY -->
+        <section id="view-history" class="view-section">
+          <div class="card">
+            <div class="card-header">
+              <h3>Riwayat Latihan</h3>
+            </div>
+            <div class="card-body">
+              <div id="history-list" class="history-grid"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW: PROGRESS -->
+        <section id="view-progress" class="view-section">
+          <div class="card">
+            <div class="card-header flex-between">
+              <h3>Perkembangan Beban & Personal Record (PR)</h3>
+              <div class="selector-wrapper">
+                <select id="progress-exercise-select" class="form-select">
+                  <option value="">-- Pilih Latihan untuk Dipantau --</option>
+                </select>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="progress-empty" class="empty-state">
+                Pilih latihan di atas untuk melihat grafik perkembangan beban dan rekor terbaik Anda.
+              </div>
+              <div id="progress-content" style="display: none;">
+                <div class="pr-banner">
+                  <div class="pr-icon">🏆</div>
+                  <div>
+                    <span class="pr-label">Personal Record (PR) Saat Ini</span>
+                    <h2 id="progress-pr-val">0 kg</h2>
+                  </div>
+                </div>
+
+                <div class="chart-container" style="position: relative; height:320px; width:100%; margin-top: 1.5rem;">
+                  <canvas id="exerciseChart"></canvas>
+                </div>
+
+                <div class="mt-4">
+                  <h4>Riwayat Set Tercatat</h4>
+                  <table class="data-table" id="progress-table">
+                    <thead>
+                      <tr>
+                        <th>Tanggal</th>
+                        <th>Beban (kg)</th>
+                        <th>Reps</th>
+                      </tr>
+                    </thead>
+                    <tbody></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW: SPLITS -->
+        <section id="view-splits" class="view-section">
+          <div class="card">
+            <div class="card-header flex-between">
+              <h3>Program Latihan & Sesi</h3>
+              <button class="btn btn-primary btn-sm" id="create-split-modal-btn">+ Program Baru</button>
+            </div>
+            <div class="card-body">
+              <div id="splits-list" class="splits-container"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW: EXERCISES -->
+        <section id="view-exercises" class="view-section">
+          <div class="card">
+            <div class="card-header flex-between">
+              <h3>Daftar Latihan</h3>
+              <button class="btn btn-primary btn-sm" id="add-exercise-modal-btn">+ Tambah Latihan</button>
+            </div>
+            <div class="card-body">
+              <p class="helper-text mb-3">Nama latihan dinormalisasi secara otomatis untuk mencegah duplikasi huruf besar/kecil atau spasi.</p>
+              <div id="exercises-list" class="exercise-grid"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- VIEW: SETTINGS -->
+        <section id="view-settings" class="view-section">
+          <div class="card" style="max-width: 600px;">
+            <div class="card-header">
+              <h3>Pengaturan Akun</h3>
+            </div>
+            <div class="card-body">
+              <div class="profile-info-box mb-4">
+                <div class="form-group">
+                  <label>Nama Lengkap</label>
+                  <input type="text" id="settings-name" disabled class="input-disabled">
+                </div>
+                <div class="form-group">
+                  <label>Alamat Email</label>
+                  <input type="text" id="settings-email" disabled class="input-disabled">
+                </div>
+              </div>
+
+              <h4>Ubah Kata Sandi</h4>
+              <form id="change-password-form">
+                <div class="form-group">
+                  <label for="current-password">Kata Sandi Saat Ini</label>
+                  <input type="password" id="current-password" required placeholder="••••••••">
+                </div>
+                <div class="form-group">
+                  <label for="new-password">Kata Sandi Baru</label>
+                  <input type="password" id="new-password" required placeholder="•••••••• (Min. 6 karakter)">
+                </div>
+                <button type="submit" class="btn btn-primary">Perbarui Kata Sandi</button>
+              </form>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- MODALS -->
+  <!-- Modal: Workout Detail Modal -->
+  <div id="workout-detail-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modal-workout-title">Detail Latihan</h3>
+        <button class="modal-close" onclick="closeModal('workout-detail-modal')">✕</button>
+      </div>
+      <div class="modal-body" id="modal-workout-content"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('workout-detail-modal')">Tutup</button>
+        <button class="btn btn-danger" id="modal-delete-workout-btn">Hapus Latihan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Create / Edit Split -->
+  <div id="split-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="split-modal-title">Buat Program Latihan</h3>
+        <button class="modal-close" onclick="closeModal('split-modal')">✕</button>
+      </div>
+      <form id="split-form">
+        <div class="modal-body">
+          <input type="hidden" id="split-id">
+          <div class="form-group">
+            <label for="split-name">Nama Program</label>
+            <input type="text" id="split-name" required placeholder="Contoh: Push Pull Legs (PPL)">
+          </div>
+          <div class="form-group">
+            <label for="split-desc">Deskripsi</label>
+            <textarea id="split-desc" rows="3" placeholder="Contoh: Program 6 hari untuk meningkatkan massa otot"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('split-modal')">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan Program</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add Session to Split -->
+  <div id="session-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="session-modal-title">Tambah Sesi ke Program</h3>
+        <button class="modal-close" onclick="closeModal('session-modal')">✕</button>
+      </div>
+      <form id="session-form">
+        <div class="modal-body">
+          <input type="hidden" id="session-split-id">
+          <input type="hidden" id="session-id">
+          <div class="form-group">
+            <label for="session-name">Nama Sesi</label>
+            <input type="text" id="session-name" required placeholder="Contoh: Push A atau Upper Body">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('session-modal')">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan Sesi</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add / Edit Exercise -->
+  <div id="exercise-modal" class="modal-backdrop" style="display: none;">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="exercise-modal-title">Tambah Latihan</h3>
+        <button class="modal-close" onclick="closeModal('exercise-modal')">✕</button>
+      </div>
+      <form id="exercise-form">
+        <div class="modal-body">
+          <input type="hidden" id="exercise-id">
+          <div class="form-group">
+            <label for="exercise-name">Nama Latihan</label>
+            <input type="text" id="exercise-name" required placeholder="Contoh: Incline Dumbbell Press">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" onclick="closeModal('exercise-modal')">Batal</button>
+          <button type="submit" class="btn btn-primary">Simpan Latihan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
