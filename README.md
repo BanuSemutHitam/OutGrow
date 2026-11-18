@@ -6,7 +6,7 @@ OUTGROW adalah aplikasi pencatatan performa latihan gym yang membantu pengguna m
 
 - Frontend: HTML, CSS, JavaScript, Chart.js
 - Backend: Node.js, Express.js
-- Database: PostgreSQL/Supabase melalui `DATABASE_URL`; otomatis menggunakan SQLite lokal jika tidak tersedia
+- Database: PostgreSQL/Supabase
 - Autentikasi: JWT + hashing kata sandi bcrypt
 
 ## Fitur
