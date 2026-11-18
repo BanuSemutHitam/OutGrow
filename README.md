@@ -29,28 +29,28 @@ Brand dan slogan tetap dalam bahasa Inggris (`OUTGROW`, `Outgrow Your Past.`). S
 ```
 GYM-PERFORMANCE-TRACKING-SYSTEM/
 ├── backend/
-│   ├── data/                 # Folder database SQLite lokal
+│   ├── data/                
 │   ├── src/
 │   │   ├── config/
-│   │   │   └── db.js         # Koneksi PostgreSQL/Supabase + fallback SQLite
+│   │   │   └── db.js         
 │   │   ├── middleware/
-│   │   │   └── auth.js       # Middleware autentikasi JWT
+│   │   │   └── auth.js       
 │   │   └── routes/
-│   │       ├── auth.js       # Registrasi, login, reset kata sandi
-│   │       ├── users.js      # Profil pengguna, ubah kata sandi
-│   │       ├── splits.js     # CRUD program latihan dan sesi
-│   │       ├── sessions.js   # CRUD sesi latihan
-│   │       ├── exercises.js  # CRUD daftar latihan (nama dinormalisasi)
-│   │       ├── workouts.js   # CRUD latihan, gerakan, dan set
-│   │       └── progress.js   # Perhitungan PR, perkembangan, dan statistik
+│   │       ├── auth.js       
+│   │       ├── users.js      
+│   │       ├── splits.js     
+│   │       ├── sessions.js   
+│   │       ├── exercises.js  
+│   │       ├── workouts.js  
+│   │       └── progress.js   
 │   ├── .env
 │   ├── .env.example
-│   └── server.js             # Entry point aplikasi Express
+│   └── server.js             
 ├── frontend/
-│   ├── index.html            # Struktur SPA bertema gelap
-│   ├── style.css             # Tema dan styling komponen UI
-│   └── app.js                # Logika frontend, pemanggil API, Chart.js
-├── schema.sql                # Referensi skema PostgreSQL/Supabase
+│   ├── index.html            
+│   ├── style.css             
+│   └── app.js               
+├── schema.sql                
 ├── package.json
 └── README.md
 ```
