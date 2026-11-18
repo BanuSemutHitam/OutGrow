@@ -1,6 +1,6 @@
 # OUTGROW — Outgrow Your Past.
 
-OUTGROW membawa ambisi untuk menjadi lebih baik dari diri sendiri sebelumnya. Aplikasi web berfokus pada performa untuk mencatat latihan gym, memantau perkembangan, dan menghitung Personal Record.
+OUTGROW adalah aplikasi pencatatan performa latihan gym yang membantu pengguna merekam aktivitas latihan, memantau perkembangan kekuatan, dan mengukur setiap pencapaian. Dibangun atas prinsip untuk terus melampaui diri sendiri, OUTGROW menjadikan setiap latihan sebagai bukti nyata dari sebuah perubahan.
 
 ## Teknologi
 
