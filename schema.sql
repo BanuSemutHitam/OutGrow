@@ -6,13 +6,15 @@
 -- USERS
 create table if not exists users (
   id uuid primary key default gen_random_uuid(),
-  email text unique not null,
+  username text unique not null,
   password_hash text not null,
   name text not null,
-  reset_token text,
-  reset_token_expires timestamptz,
   created_at timestamptz default now()
 );
+
+-- Username unique tanpa membedakan huruf besar/kecil.
+create unique index if not exists users_username_normalized
+  on users (lower(trim(username)));
 
 -- SPLITS
 create table if not exists splits (

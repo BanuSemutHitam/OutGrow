@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.get('/me', authenticate, async (req, res) => {
   try {
-    const rows = await query('SELECT id, email, name FROM users WHERE id = $1', [req.userId]);
+    const rows = await query('SELECT id, username, name FROM users WHERE id = $1', [req.userId]);
     if (rows.length === 0) return res.status(404).json({ message: 'Pengguna tidak ditemukan' });
     res.json(rows[0]);
   } catch (err) {

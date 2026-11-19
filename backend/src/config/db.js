@@ -1,56 +1,64 @@
-const fs = require('fs');
-const path = require('path');
 const crypto = require('crypto');
+const { Pool } = require('pg');
 
-let mode = 'sqlite';
 let pgPool = null;
-let sqliteDb = null;
 
 const initDb = async () => {
-  if (process.env.DATABASE_URL) {
-    try {
-      const { Pool } = require('pg');
-      pgPool = new Pool({
-        connectionString: process.env.DATABASE_URL,
-        ssl: process.env.DATABASE_URL.includes('localhost') ? false : { rejectUnauthorized: false }
-      });
-      // Test PG connection
-      const client = await pgPool.connect();
-      client.release();
-      mode = 'postgres';
-      console.log('[DB] Connected to PostgreSQL / Supabase successfully.');
-      await initPostgresTables();
-      return;
-    } catch (err) {
-      console.warn('[DB] PostgreSQL connection failed, falling back to local SQLite:', err.message);
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) {
+    console.error('[DB] FATAL: DATABASE_URL tidak ditemukan di backend/.env');
+    console.error('[DB] Aplikasi mewajibkan koneksi Supabase / PostgreSQL.');
+    process.exit(1);
+  }
+
+  try {
+    pgPool = new Pool({
+      connectionString,
+      ssl: connectionString.includes('localhost') ? false : { rejectUnauthorized: false }
+    });
+
+    const client = await pgPool.connect();
+    client.release();
+    console.log('[DB] Connected to PostgreSQL / Supabase successfully.');
+    await initPostgresTables();
+  } catch (err) {
+    console.error('[DB] FATAL: Gagal koneksi ke Supabase / PostgreSQL:', err.message);
+    if (err.message.includes('ENOTFOUND')) {
+      console.error('[DB] Host tidak ditemukan. Gunakan connection pooler Supabase (IPv4 compatible), bukan direct connection.');
     }
+    process.exit(1);
   }
-
-  // SQLite fallback
-  mode = 'sqlite';
-  const sqlite3 = require('sqlite3').verbose();
-  const dbDir = path.join(__dirname, '..', '..', 'data');
-  if (!fs.existsSync(dbDir)) {
-    fs.mkdirSync(dbDir, { recursive: true });
-  }
-  const dbPath = path.join(dbDir, 'gym.sqlite');
-  console.log(`[DB] Using SQLite local database at: ${dbPath}`);
-
-  sqliteDb = new sqlite3.Database(dbPath);
-  await initSqliteTables();
 };
 
 const initPostgresTables = async () => {
   const schema = `
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
-      email TEXT UNIQUE NOT NULL,
+      username TEXT UNIQUE NOT NULL,
       password_hash TEXT NOT NULL,
       name TEXT NOT NULL,
-      reset_token TEXT,
-      reset_token_expires TIMESTAMPTZ,
       created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
     );
+
+    -- Migration helper if table previously had email column
+    DO $$
+    BEGIN
+      IF NOT EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'users' AND column_name = 'username'
+      ) THEN
+        ALTER TABLE users ADD COLUMN username TEXT;
+        IF EXISTS (
+          SELECT 1 FROM information_schema.columns
+          WHERE table_name = 'users' AND column_name = 'email'
+        ) THEN
+          UPDATE users SET username = LOWER(SPLIT_PART(email, '@', 1)) WHERE username IS NULL;
+          ALTER TABLE users ALTER COLUMN email DROP NOT NULL;
+        END IF;
+        ALTER TABLE users ALTER COLUMN username SET NOT NULL;
+        CREATE UNIQUE INDEX IF NOT EXISTS users_username_idx ON users (LOWER(username));
+      END IF;
+    END $$;
 
     CREATE TABLE IF NOT EXISTS splits (
       id TEXT PRIMARY KEY,
@@ -103,131 +111,17 @@ const initPostgresTables = async () => {
   await pgPool.query(schema);
 };
 
-const initSqliteTables = () => {
-  return new Promise((resolve, reject) => {
-    sqliteDb.serialize(() => {
-      sqliteDb.run('PRAGMA foreign_keys = ON;');
-      sqliteDb.run(`
-        CREATE TABLE IF NOT EXISTS users (
-          id TEXT PRIMARY KEY,
-          email TEXT UNIQUE NOT NULL,
-          password_hash TEXT NOT NULL,
-          name TEXT NOT NULL,
-          reset_token TEXT,
-          reset_token_expires TEXT,
-          created_at TEXT DEFAULT CURRENT_TIMESTAMP
-        );
-      `);
-      sqliteDb.run(`
-        CREATE TABLE IF NOT EXISTS splits (
-          id TEXT PRIMARY KEY,
-          user_id TEXT NOT NULL,
-          name TEXT NOT NULL,
-          description TEXT DEFAULT '',
-          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-        );
-      `);
-      sqliteDb.run(`
-        CREATE TABLE IF NOT EXISTS sessions (
-          id TEXT PRIMARY KEY,
-          split_id TEXT NOT NULL,
-          user_id TEXT NOT NULL,
-          name TEXT NOT NULL,
-          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (split_id) REFERENCES splits(id) ON DELETE CASCADE,
-          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-        );
-      `);
-      sqliteDb.run(`
-        CREATE TABLE IF NOT EXISTS exercises (
-          id TEXT PRIMARY KEY,
-          user_id TEXT NOT NULL,
-          name TEXT NOT NULL,
-          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-        );
-      `);
-      sqliteDb.run(`
-        CREATE UNIQUE INDEX IF NOT EXISTS exercises_user_norm_idx
-        ON exercises (user_id, LOWER(TRIM(name)));
-      `);
-      sqliteDb.run(`
-        CREATE TABLE IF NOT EXISTS workouts (
-          id TEXT PRIMARY KEY,
-          user_id TEXT NOT NULL,
-          session_id TEXT NOT NULL,
-          date TEXT NOT NULL,
-          created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-          FOREIGN KEY (session_id) REFERENCES sessions(id) ON DELETE CASCADE
-        );
-      `);
-      sqliteDb.run(`
-        CREATE TABLE IF NOT EXISTS workout_exercises (
-          id TEXT PRIMARY KEY,
-          workout_id TEXT NOT NULL,
-          exercise_id TEXT NOT NULL,
-          FOREIGN KEY (workout_id) REFERENCES workouts(id) ON DELETE CASCADE,
-          FOREIGN KEY (exercise_id) REFERENCES exercises(id) ON DELETE CASCADE
-        );
-      `);
-      sqliteDb.run(`
-        CREATE TABLE IF NOT EXISTS workout_sets (
-          id TEXT PRIMARY KEY,
-          workout_exercise_id TEXT NOT NULL,
-          set_number INTEGER NOT NULL,
-          weight REAL NOT NULL,
-          reps INTEGER NOT NULL,
-          FOREIGN KEY (workout_exercise_id) REFERENCES workout_exercises(id) ON DELETE CASCADE
-        );
-      `, (err) => {
-        if (err) reject(err);
-        else resolve();
-      });
-    });
-  });
-};
-
-// Generic query helper that accepts $1, $2 style parameters for both engines
 const query = async (sqlText, params = []) => {
-  if (mode === 'postgres') {
-    const res = await pgPool.query(sqlText, params);
-    return res.rows;
-  } else {
-    return new Promise((resolve, reject) => {
-      // For SQLite, convert $1, $2, ... to ?
-      const sqliteSql = sqlText.replace(/\$\d+/g, '?');
-      const isSelect = /^\s*(SELECT|PRAGMA)/i.test(sqliteSql);
-
-      if (isSelect) {
-        sqliteDb.all(sqliteSql, params, (err, rows) => {
-          if (err) reject(err);
-          else resolve(rows || []);
-        });
-      } else {
-        sqliteDb.run(sqliteSql, params, function (err) {
-          if (err) reject(err);
-          else resolve({ changes: this.changes, lastID: this.lastID });
-        });
-      }
-    });
-  }
+  const res = await pgPool.query(sqlText, params);
+  return res.rows;
 };
 
 const getClient = async () => {
-  if (mode === 'postgres') {
-    const client = await pgPool.connect();
-    return {
-      query: (text, params) => client.query(text, params),
-      release: () => client.release()
-    };
-  } else {
-    return {
-      query: (text, params) => query(text, params),
-      release: () => {}
-    };
-  }
+  const client = await pgPool.connect();
+  return {
+    query: (text, params) => client.query(text, params),
+    release: () => client.release()
+  };
 };
 
 const generateId = () => crypto.randomUUID();
@@ -237,5 +131,5 @@ module.exports = {
   query,
   getClient,
   generateId,
-  getMode: () => mode
+  getMode: () => 'postgres'
 };

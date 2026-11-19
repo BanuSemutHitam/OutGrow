@@ -6,12 +6,13 @@ OUTGROW adalah aplikasi pencatatan performa latihan gym yang membantu pengguna m
 
 - Frontend: HTML, CSS, JavaScript, Chart.js
 - Backend: Node.js, Express.js
-- Database: PostgreSQL/Supabase
+- Database: PostgreSQL (Supabase) via `DATABASE_URL` (wajib)
 - Autentikasi: JWT + hashing kata sandi bcrypt
 
 ## Fitur
 
-- Registrasi, login, logout, ubah kata sandi, dan alur reset kata sandi lokal
+- Registrasi & login berbasis username + kata sandi
+- Ubah kata sandi dari profil akun
 - CRUD program latihan (split) dan sesi latihan
 - Daftar latihan pribadi dengan normalisasi nama untuk mencegah duplikasi
 - Catat latihan dengan banyak gerakan dan set
@@ -29,58 +30,63 @@ Brand dan slogan tetap dalam bahasa Inggris (`OUTGROW`, `Outgrow Your Past.`). S
 ```
 GYM-PERFORMANCE-TRACKING-SYSTEM/
 ├── backend/
-│   ├── data/                
 │   ├── src/
 │   │   ├── config/
-│   │   │   └── db.js         
+│   │   │   └── db.js         # Koneksi Supabase / PostgreSQL (Pool)
 │   │   ├── middleware/
-│   │   │   └── auth.js       
+│   │   │   └── auth.js
 │   │   └── routes/
-│   │       ├── auth.js       
-│   │       ├── users.js      
-│   │       ├── splits.js     
-│   │       ├── sessions.js   
-│   │       ├── exercises.js  
-│   │       ├── workouts.js  
-│   │       └── progress.js   
+│   │       ├── auth.js
+│   │       ├── users.js
+│   │       ├── splits.js
+│   │       ├── sessions.js
+│   │       ├── exercises.js
+│   │       ├── workouts.js
+│   │       └── progress.js
 │   ├── .env
 │   ├── .env.example
-│   └── server.js             
+│   └── server.js
 ├── frontend/
-│   ├── index.html            
-│   ├── style.css             
-│   └── app.js               
-├── schema.sql                
+│   ├── index.html
+│   ├── style.css
+│   └── app.js
+├── schema.sql
 ├── package.json
 └── README.md
 ```
 
-## Menjalankan Secara Lokal
+## Konfigurasi Supabase
+
+Backend mewajibkan koneksi ke PostgreSQL Supabase.
+
+1. Buka dashboard project Supabase.
+2. Klik **Connect**, lalu buka connection string **URI**.
+3. Pilih **Session mode** atau **Transaction mode**. Gunakan connection pooler jika jaringan tidak mendukung IPv6.
+4. Jangan gunakan REST URL (`https://<ref>.supabase.co/rest/v1/`) untuk `DATABASE_URL`. Backend memakai protokol PostgreSQL.
+5. Salin `backend/.env.example` menjadi `backend/.env`, lalu isi connection URI dari dashboard:
+
+```env
+PORT=5000
+JWT_SECRET=ganti-dengan-secret-acak-yang-panjang-min-32-karakter
+DATABASE_URL=postgresql://postgres.[PROJECT_REF]:[PASSWORD]@[POOLER_HOST]:[PORT]/postgres
+```
+
+Gunakan nilai `[PROJECT_REF]`, `[PASSWORD]`, `[POOLER_HOST]`, dan `[PORT]` persis seperti URI di dashboard Supabase.
+
+## Menjalankan Aplikasi
 
 ```bash
 npm install
 npm start
 ```
 
-Buka <http://localhost:5000>.
+Backend otomatis membuat tabel yang diperlukan saat start (`users`, `splits`, `sessions`, `exercises`, `workouts`, `workout_exercises`, `workout_sets`). Buka <http://localhost:5000>.
 
-Tanpa `DATABASE_URL`, aplikasi membuat database SQLite lokal di `backend/data/gym.sqlite`.
+File `schema.sql` berisi referensi skema PostgreSQL untuk Supabase SQL Editor.
 
-## Supabase / PostgreSQL
+## Catatan Produksi & Keamanan
 
-1. Buat project PostgreSQL di Supabase.
-2. Masukkan `DATABASE_URL` ke `backend/.env`:
-
-```env
-PORT=5000
-JWT_SECRET=ganti-dengan-secret-acak-yang-panjang
-DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/DATABASE
-```
-
-3. Jalankan aplikasi. Aplikasi membuat tabel yang diperlukan secara otomatis.
-
-File `schema.sql` berisi referensi skema PostgreSQL yang dapat dijalankan secara terpisah.
-
-## Catatan Produksi
-
-Gunakan `JWT_SECRET` unik dan kuat. Fitur reset kata sandi pada aplikasi lokal mengubah kata sandi melalui alamat email; untuk produksi, ganti dengan token reset satu kali yang dikirim melalui email.
+- Jangan commit `backend/.env` ke git repository; file ini masuk `.gitignore`.
+- Gunakan `JWT_SECRET` panjang, acak, dan unik.
+- Jangan pernah menaruh Supabase `service_role` key di frontend atau file publik.
+- Reset kata sandi mandiri dinonaktifkan. Pengguna bisa mengganti kata sandi dari pengaturan akun setelah login.

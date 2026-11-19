@@ -1,4 +1,2 @@
 node_modules/
-backend/data/
 backend/.env
-*.sqlite

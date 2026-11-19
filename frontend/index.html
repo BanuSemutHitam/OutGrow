@@ -30,8 +30,8 @@
         <h2>Masuk</h2>
         <form id="login-form">
           <div class="form-group">
-            <label for="login-email">Alamat Email</label>
-            <input type="email" id="login-email" required placeholder="nama@email.com">
+            <label for="login-username">Username</label>
+            <input type="text" id="login-username" required minlength="3" placeholder="Username">
           </div>
           <div class="form-group">
             <label for="login-password">Kata Sandi</label>
@@ -41,8 +41,6 @@
         </form>
         <div class="auth-switch">
           <span>Belum punya akun? <a href="#" id="to-register-btn">Daftar sekarang</a></span>
-          <br>
-          <a href="#" id="to-forgot-btn" class="subtle-link">Lupa kata sandi?</a>
         </div>
       </div>
 
@@ -51,12 +49,8 @@
         <h2>Buat Akun</h2>
         <form id="register-form">
           <div class="form-group">
-            <label for="reg-name">Nama Lengkap</label>
-            <input type="text" id="reg-name" required placeholder="Nama lengkap">
-          </div>
-          <div class="form-group">
-            <label for="reg-email">Alamat Email</label>
-            <input type="email" id="reg-email" required placeholder="nama@email.com">
+            <label for="reg-username">Username</label>
+            <input type="text" id="reg-username" required minlength="3" placeholder="Username">
           </div>
           <div class="form-group">
             <label for="reg-password">Kata Sandi</label>
@@ -71,19 +65,8 @@
 
       <!-- Forgot Password Info -->
       <div id="forgot-box" class="auth-form-box" style="display: none;">
-        <h2>Pemulihan Kata Sandi</h2>
-        <p class="helper-text">Masukkan email yang terdaftar untuk mengatur ulang kata sandi Anda.</p>
-        <form id="forgot-form">
-          <div class="form-group">
-            <label for="forgot-email">Alamat Email</label>
-            <input type="email" id="forgot-email" required placeholder="nama@email.com">
-          </div>
-          <div class="form-group">
-            <label for="forgot-new-pass">Kata Sandi Baru</label>
-            <input type="password" id="forgot-new-pass" required placeholder="Kata sandi baru">
-          </div>
-          <button type="submit" class="btn btn-primary btn-block">Simpan Kata Sandi Baru</button>
-        </form>
+        <h2>Lupa Kata Sandi</h2>
+        <p class="helper-text">Reset kata sandi mandiri dinonaktifkan. Hubungi admin untuk mengatur ulang kata sandi akun Anda.</p>
         <div class="auth-switch">
           <a href="#" id="back-to-login-btn">Kembali ke Halaman Masuk</a>
         </div>
@@ -133,7 +116,7 @@
           <div class="user-avatar" id="nav-avatar">U</div>
           <div class="user-info">
             <strong id="nav-username">User</strong>
-            <span id="nav-useremail">email@test.com</span>
+            <span id="nav-useremail">@username</span>
           </div>
         </div>
         <button id="logout-btn" class="btn-logout" title="Keluar"><span class="material-symbols-outlined">logout</span></button>
@@ -339,8 +322,8 @@
                   <input type="text" id="settings-name" disabled class="input-disabled">
                 </div>
                 <div class="form-group">
-                  <label>Alamat Email</label>
-                  <input type="text" id="settings-email" disabled class="input-disabled">
+                  <label>Username</label>
+                  <input type="text" id="settings-username" disabled class="input-disabled">
                 </div>
               </div>
 

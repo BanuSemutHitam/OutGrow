@@ -40,15 +40,15 @@ function toast(message, type = 'success') {
 // ===================== AUTH FLOW =====================
 document.getElementById('login-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const email = document.getElementById('login-email').value;
+  const username = document.getElementById('login-username').value.trim();
   const password = document.getElementById('login-password').value;
   try {
-    const data = await apiPost('/api/auth/login', { email, password });
+    const data = await apiPost('/api/auth/login', { username, password });
     token = data.token;
     localStorage.setItem('gym_token', token);
     currentUser = data.user;
     showApp();
-    toast('Selamat datang kembali, ' + currentUser.name + '!');
+    toast('Selamat datang kembali, ' + (currentUser.name || currentUser.username) + '!');
   } catch (err) {
     toast(err.message, 'error');
   }
@@ -56,31 +56,17 @@ document.getElementById('login-form').addEventListener('submit', async (e) => {
 
 document.getElementById('register-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const name = document.getElementById('reg-name').value;
-  const email = document.getElementById('reg-email').value;
+  const username = document.getElementById('reg-username').value.trim();
   const password = document.getElementById('reg-password').value;
+  if (username.length < 3) return toast('Username minimal 3 karakter', 'error');
   if (password.length < 6) return toast('Kata sandi minimal 6 karakter', 'error');
   try {
-    const data = await apiPost('/api/auth/register', { email, password, name });
+    const data = await apiPost('/api/auth/register', { username, password });
     token = data.token;
     localStorage.setItem('gym_token', token);
     currentUser = data.user;
     showApp();
-    toast('Akun berhasil dibuat! Selamat datang, ' + currentUser.name + '!');
-  } catch (err) {
-    toast(err.message, 'error');
-  }
-});
-
-document.getElementById('forgot-form').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const email = document.getElementById('forgot-email').value;
-  const newPassword = document.getElementById('forgot-new-pass').value;
-  if (newPassword.length < 6) return toast('Kata sandi minimal 6 karakter', 'error');
-  try {
-    await apiPost('/api/auth/reset-password', { email, newPassword });
-    toast('Kata sandi berhasil diatur ulang! Silakan masuk kembali.');
-    showAuthForm('login');
+    toast('Akun berhasil dibuat! Selamat datang, ' + (currentUser.name || currentUser.username) + '!');
   } catch (err) {
     toast(err.message, 'error');
   }
@@ -89,13 +75,13 @@ document.getElementById('forgot-form').addEventListener('submit', async (e) => {
 // Auth form toggles
 document.getElementById('to-register-btn').addEventListener('click', (e) => { e.preventDefault(); showAuthForm('register'); });
 document.getElementById('to-login-btn').addEventListener('click', (e) => { e.preventDefault(); showAuthForm('login'); });
-document.getElementById('to-forgot-btn').addEventListener('click', (e) => { e.preventDefault(); showAuthForm('forgot'); });
-document.getElementById('back-to-login-btn').addEventListener('click', (e) => { e.preventDefault(); showAuthForm('login'); });
+document.getElementById('back-to-login-btn')?.addEventListener('click', (e) => { e.preventDefault(); showAuthForm('login'); });
 
 function showAuthForm(type) {
   document.getElementById('login-box').style.display = type === 'login' ? 'block' : 'none';
   document.getElementById('register-box').style.display = type === 'register' ? 'block' : 'none';
-  document.getElementById('forgot-box').style.display = type === 'forgot' ? 'block' : 'none';
+  const forgotBox = document.getElementById('forgot-box');
+  if (forgotBox) forgotBox.style.display = type === 'forgot' ? 'block' : 'none';
 }
 
 function logout() {
@@ -124,11 +110,11 @@ async function showApp() {
     }
   }
 
-  document.getElementById('nav-username').textContent = currentUser.name;
-  document.getElementById('nav-useremail').textContent = currentUser.email;
-  document.getElementById('nav-avatar').textContent = currentUser.name.charAt(0).toUpperCase();
-  document.getElementById('settings-name').value = currentUser.name;
-  document.getElementById('settings-email').value = currentUser.email;
+  document.getElementById('nav-username').textContent = currentUser.name || currentUser.username;
+  document.getElementById('nav-useremail').textContent = '@' + (currentUser.username || currentUser.name);
+  document.getElementById('nav-avatar').textContent = (currentUser.name || currentUser.username).charAt(0).toUpperCase();
+  document.getElementById('settings-name').value = currentUser.name || currentUser.username;
+  document.getElementById('settings-username').value = currentUser.username || currentUser.name;
 
   // Set date default
   document.getElementById('log-date').valueAsDate = new Date();
